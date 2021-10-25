@@ -9,6 +9,7 @@ import javax.jcr.Node;
 import javax.jcr.Session;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.sling.api.resource.ResourceResolver;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -21,8 +22,6 @@ import com.codingexercise.adobe.core.configs.DamServiceConfig;
 import com.codingexercise.adobe.core.models.DamAssetDetails;
 import com.codingexercise.adobe.core.models.DamAssetsModel;
 import com.codingexercise.adobe.core.service.DamService;
-import com.codingexercise.adobe.core.service.GetResourceResolver;
-import com.day.cq.dam.api.Asset;
 import com.day.cq.search.PredicateGroup;
 import com.day.cq.search.Query;
 import com.day.cq.search.QueryBuilder;
@@ -30,8 +29,7 @@ import com.day.cq.search.result.Hit;
 import com.day.cq.search.result.SearchResult;
 import com.google.common.net.UrlEscapers;
 import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.reflect.TypeToken;
+
 
 @Component(service = DamService.class, immediate = true)
 @Designate(ocd = DamServiceConfig.class)
@@ -58,16 +56,13 @@ public class DamServiceImpl implements DamService {
 	 */
 	private Session session;
 
-	@Reference
-	private GetResourceResolver getResourceResolver;
-
 	@Activate
 	protected void activate(DamServiceConfig configuration) {
 		this.configuration = configuration;
 	}
 
 	@Override
-	public String getAllChildAssets(long start) {
+	public String getAllChildAssets(ResourceResolver resourceResolver, long start) {
 		String damPath = configuration.getDamPath();
 		if (StringUtils.isNotBlank(damPath)) {
 			try {
@@ -75,7 +70,7 @@ public class DamServiceImpl implements DamService {
 				/**
 				 * Adapting the resource resolver to the session object
 				 */
-				session = getResourceResolver.getServiceResolver().adaptTo(Session.class);
+				session = resourceResolver.adaptTo(Session.class);
 				/**
 				 * Map for the predicates
 				 */
@@ -103,23 +98,19 @@ public class DamServiceImpl implements DamService {
 				 * Getting the search results
 				 */
 				SearchResult searchResult = query.getResult();
-				
-				// paging metadata
-			    int hitsPerPage = searchResult.getHits().size();
-			    long totalMatches = searchResult.getTotalMatches();
-			    long offset = searchResult.getStartIndex();
-			    long numberOfPages = totalMatches / configuration.getHitsPerPage();
 
-				
+				// paging metadata
+				int hitsPerPage = searchResult.getHits().size();
+				long totalMatches = searchResult.getTotalMatches();
+				long offset = searchResult.getStartIndex();
+				long numberOfPages = totalMatches / configuration.getHitsPerPage();
+
 				List<DamAssetDetails> assets = new ArrayList<DamAssetDetails>();
 				for (Hit hit : searchResult.getHits()) {
 
-				
 					Node hitNode = hit.getNode();
 					Node metaDataNode = hit.getNode().getNode("jcr:content/metadata");
-					
 
-					
 					DamAssetDetails details = new DamAssetDetails(hit.getNode().getName(),
 							metaDataNode.getProperty("dc:format").getString(), hit.getTitle(),
 							(metaDataNode.hasProperty("dc:description")
@@ -129,9 +120,10 @@ public class DamServiceImpl implements DamService {
 					assets.add(details);
 
 				}
-				
-				DamAssetsModel assetsModel = new DamAssetsModel(hitsPerPage, totalMatches, offset, numberOfPages, assets);
-				
+
+				DamAssetsModel assetsModel = new DamAssetsModel(hitsPerPage, totalMatches, offset, numberOfPages,
+						assets);
+
 				Gson gson = new Gson();
 				return gson.toJson(assetsModel);
 
