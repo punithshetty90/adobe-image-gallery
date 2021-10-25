@@ -48,4 +48,6 @@ Hits Per Page: 20 (This config is for pagination)
 2) Navigate to "Advanced" tab -> Add a new entry under "Allowed Template" -> /conf/myproject/settings/wcm/templates/.*
 3) http://<server>:<port>/sites.html/content/we-retail/language-masters/en -> Create new Page using "Adobe Coding Page Template"
 
-## 
+## Screenshot
+
+![Alt text](http://full/path/to/img.jpg "Optional title")
