@@ -50,4 +50,6 @@ Hits Per Page: 20 (This config is for pagination)
 
 ## Screenshot
 
-![Alt text](http://full/path/to/img.jpg "Optional title")
+![Alt text](https://github.com/punithshetty123/myproject/blob/main/screenshots/Screen%20Shot%202021-10-24%20at%208.16.31%20PM.png?raw=true "Image Gallery")
+
+![Alt text](https://github.com/punithshetty123/myproject/blob/main/screenshots/Screen%20Shot%202021-10-24%20at%208.17.24%20PM.png?raw=true "OSGI Config")
